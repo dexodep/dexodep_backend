@@ -10,18 +10,32 @@ import githubRoutes from './routes/github';
 
 const app = express();
 
-// CORS - Allow multiple origins for dev and production
-const allowedOrigins = [
-    config.frontendUrl,
-    'http://localhost:3000',
-    'http://localhost:3001',
-    /\.vercel\.app$/,  // Allow all Vercel deployments
-];
+// CORS - Allow frontend requests with detailed origin matching
+const corsOptions = {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+        const allowedOrigins = [
+            config.frontendUrl,
+            'http://localhost:3000',
+            'http://localhost:3001',
+            'https://dexodep.vercel.app',
+        ];
 
-app.use(cors({
-    origin: allowedOrigins,
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
+            callback(null, true);
+        } else {
+            console.warn(`CORS blocked origin: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
-}));
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
 
 // Body parsing
 app.use(express.json());
