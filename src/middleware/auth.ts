@@ -6,6 +6,7 @@ export interface AuthRequest extends Request {
     userId?: string;
 }
 
+
 export function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
