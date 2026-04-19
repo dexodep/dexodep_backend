@@ -10,9 +10,16 @@ import githubRoutes from './routes/github';
 
 const app = express();
 
-// CORS
+// CORS - Allow multiple origins for dev and production
+const allowedOrigins = [
+    config.frontendUrl,
+    'http://localhost:3000',
+    'http://localhost:3001',
+    /\.vercel\.app$/,  // Allow all Vercel deployments
+];
+
 app.use(cors({
-    origin: config.frontendUrl,
+    origin: allowedOrigins,
     credentials: true,
 }));
 
