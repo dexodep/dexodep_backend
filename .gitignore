@@ -1,15 +1,44 @@
+# Node
 node_modules/
+
+# Build outputs
 dist/
 build/
 coverage/
 
-# env (never commit secrets)
-.env
-.env.*
+# TypeScript
+*.tsbuildinfo
 
-# logs
+# Logs
 logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# Environment
+.env
+.env.*.local
+
+# Debug
+*.localhistory
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Misc
+uploads/
+temp/
+.progress/
+coverage/
+
+# Lockfiles (optional - keep if you want to commit lockfiles)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
