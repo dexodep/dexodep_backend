@@ -1,6 +1,8 @@
-import { Router, Response } from 'express';
+import { Router, Response, Request } from 'express';
 import { NodeSSH } from 'node-ssh';
+import jwt from 'jsonwebtoken';
 import db from '../db';
+import { config } from '../config';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 
 const router = Router();
@@ -170,7 +172,7 @@ router.post('/:id/home-dir', authMiddleware, async (req: AuthRequest, res: Respo
 });
 
 // GET /api/servers/:id/setup → SSE endpoint for full server provisioning
-router.get('/:id/setup', async (req, res: Response) => {
+router.get('/:id/setup', async (req: Request, res: Response) => {
     // Auth via query param (SSE can't send headers)
     const token = req.query.token as string;
     if (!token) {
@@ -180,8 +182,7 @@ router.get('/:id/setup', async (req, res: Response) => {
 
     let userId: string;
     try {
-        const jwt = require('jsonwebtoken');
-        const decoded = jwt.verify(token, require('../config').config.jwtSecret) as { userId: string };
+        const decoded = jwt.verify(token, config.jwtSecret) as { userId: string };
         userId = decoded.userId;
     } catch {
         res.status(401).json({ error: 'Invalid token' });
@@ -436,7 +437,7 @@ router.get('/:id/logs', authMiddleware, async (req: AuthRequest, res: Response) 
 });
 
 // GET /api/servers/:id/monitor → SSE endpoint for real-time monitoring
-router.get('/:id/monitor', async (req, res: Response) => {
+router.get('/:id/monitor', async (req: Request, res: Response) => {
     // Auth via query param (SSE can't send headers)
     const token = req.query.token as string;
     if (!token) {
@@ -446,8 +447,7 @@ router.get('/:id/monitor', async (req, res: Response) => {
 
     let userId: string;
     try {
-        const jwt = require('jsonwebtoken');
-        const decoded = jwt.verify(token, require('../config').config.jwtSecret) as { userId: string };
+        const decoded = jwt.verify(token, config.jwtSecret) as { userId: string };
         userId = decoded.userId;
     } catch {
         res.status(401).json({ error: 'Invalid token' });
