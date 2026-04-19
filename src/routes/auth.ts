@@ -37,6 +37,7 @@ router.get('/github/callback', async (req: Request, res: Response) => {
                 client_id: config.github.clientId,
                 client_secret: config.github.clientSecret,
                 code,
+                redirect_uri: config.github.callbackUrl,
             }),
         });
 
