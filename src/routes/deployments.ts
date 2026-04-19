@@ -61,14 +61,17 @@ router.get('/:id', authMiddleware, async (req: AuthRequest, res: Response) => {
 });
 
 // GET /api/deployments/:id/logs → SSE stream (real-time logs)
-router.get('/:id/logs', async (req: Request, res: Response) => {
+router.get('/:id/logs', authMiddleware, async (req: AuthRequest, res: Response) => {
     try {
         const deploymentId = req.params.id;
 
-        // Check if deployment exists
+        // Verify user owns this deployment
         const result = await db.query(
-            'SELECT id, status, phase, logs FROM deployments WHERE id = $1',
-            [deploymentId]
+            `SELECT d.id, d.status, d.phase, d.logs 
+             FROM deployments d
+             JOIN services s ON d.service_id = s.id
+             WHERE d.id = $1 AND s.user_id = $2`,
+            [deploymentId, req.userId]
         );
 
         if (result.rows.length === 0) {
