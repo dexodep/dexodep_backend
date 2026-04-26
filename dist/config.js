@@ -5,7 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.config = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
+const https_1 = __importDefault(require("https"));
 dotenv_1.default.config();
+const githubAllowSelfSignedCerts = process.env.GITHUB_ALLOW_SELF_SIGNED_CERTS === 'true';
+const githubFetchAgent = new https_1.default.Agent({ rejectUnauthorized: !githubAllowSelfSignedCerts });
 // Validate required environment variables
 const requiredEnvVars = [
     'DATABASE_URL',
@@ -28,7 +31,8 @@ exports.config = {
         clientId: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
         callbackUrl: process.env.GITHUB_CALLBACK_URL,
-        allowSelfSignedCerts: process.env.GITHUB_ALLOW_SELF_SIGNED_CERTS === 'true',
+        allowSelfSignedCerts: githubAllowSelfSignedCerts,
+        fetchAgent: githubFetchAgent,
     },
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
 };

@@ -1,5 +1,9 @@
 import dotenv from 'dotenv';
+import https from 'https';
 dotenv.config();
+
+const githubAllowSelfSignedCerts = process.env.GITHUB_ALLOW_SELF_SIGNED_CERTS === 'true';
+const githubFetchAgent = new https.Agent({ rejectUnauthorized: !githubAllowSelfSignedCerts });
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -25,7 +29,8 @@ export const config = {
         clientId: process.env.GITHUB_CLIENT_ID!,
         clientSecret: process.env.GITHUB_CLIENT_SECRET!,
         callbackUrl: process.env.GITHUB_CALLBACK_URL!,
-        allowSelfSignedCerts: process.env.GITHUB_ALLOW_SELF_SIGNED_CERTS === 'true',
+        allowSelfSignedCerts: githubAllowSelfSignedCerts,
+        fetchAgent: githubFetchAgent,
     },
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
 };

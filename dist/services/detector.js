@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.detectFromGitHub = detectFromGitHub;
+const config_1 = require("../config");
 /**
  * Detect language/runtime from a GitHub repo by checking for known files.
  * Uses GitHub API (no clone needed).
@@ -14,7 +15,7 @@ async function detectFromGitHub(accessToken, repoFullName, branch) {
     // Fetch root directory listing
     let rootFiles = [];
     try {
-        const res = await fetch(`${baseUrl}?ref=${branch}`, { headers });
+        const res = await fetch(`${baseUrl}?ref=${branch}`, { agent: config_1.config.github.fetchAgent, headers });
         if (res.ok) {
             const data = (await res.json());
             rootFiles = data.map((f) => f.name);
@@ -26,7 +27,7 @@ async function detectFromGitHub(accessToken, repoFullName, branch) {
     // Helper to fetch file content
     async function getFileContent(path) {
         try {
-            const res = await fetch(`${baseUrl}/${path}?ref=${branch}`, { headers });
+            const res = await fetch(`${baseUrl}/${path}?ref=${branch}`, { agent: config_1.config.github.fetchAgent, headers });
             if (!res.ok)
                 return null;
             const data = (await res.json());

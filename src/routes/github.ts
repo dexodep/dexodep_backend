@@ -2,6 +2,7 @@ import { Router, Response } from 'express';
 import db from '../db';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
 import { detectFromGitHub } from '../services/detector';
+import { config } from '../config';
 
 const router = Router();
 
@@ -23,6 +24,7 @@ router.get('/repos', authMiddleware, async (req: AuthRequest, res: Response) => 
         const response = await fetch(
             'https://api.github.com/user/repos?sort=updated&direction=desc&per_page=50&type=all',
             {
+                agent: config.github.fetchAgent,
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                     Accept: 'application/vnd.github.v3+json',

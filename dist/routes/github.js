@@ -7,6 +7,7 @@ const express_1 = require("express");
 const db_1 = __importDefault(require("../db"));
 const auth_1 = require("../middleware/auth");
 const detector_1 = require("../services/detector");
+const config_1 = require("../config");
 const router = (0, express_1.Router)();
 // GET /api/github/repos → fetch user's GitHub repos
 router.get('/repos', auth_1.authMiddleware, async (req, res) => {
@@ -18,6 +19,7 @@ router.get('/repos', auth_1.authMiddleware, async (req, res) => {
         }
         const accessToken = userResult.rows[0].access_token;
         const response = await fetch('https://api.github.com/user/repos?sort=updated&direction=desc&per_page=50&type=all', {
+            agent: config_1.config.github.fetchAgent,
             headers: {
                 Authorization: `Bearer ${accessToken}`,
                 Accept: 'application/vnd.github.v3+json',
