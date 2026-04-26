@@ -6,6 +6,7 @@ export declare const config: {
         clientId: string;
         clientSecret: string;
         callbackUrl: string;
+        allowSelfSignedCerts: boolean;
     };
     frontendUrl: string;
 };
