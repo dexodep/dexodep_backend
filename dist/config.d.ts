@@ -1,4 +1,3 @@
-import https from 'https';
 export declare const config: {
     port: number;
     databaseUrl: string;
@@ -7,7 +6,6 @@ export declare const config: {
         clientId: string;
         clientSecret: string;
         callbackUrl: string;
-        fetchAgent: https.Agent;
     };
     frontendUrl: string;
 };

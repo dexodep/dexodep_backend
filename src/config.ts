@@ -1,13 +1,10 @@
 import dotenv from 'dotenv';
-import https from 'https';
 dotenv.config();
 
-// Create HTTPS agent that handles self-signed certs for GitHub API calls
-// This is needed for environments with intercepting proxies or self-signed cert chains
-const githubFetchAgent = new https.Agent({
-    rejectUnauthorized: false,
-    keepAlive: true,
-});
+// Disable TLS certificate verification for GitHub API calls in environments 
+// with self-signed certs (e.g., corporate proxies, Render's networking)
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+console.log('⚠️  TLS verification disabled for outbound HTTPS calls (GitHub API access)');
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -33,9 +30,6 @@ export const config = {
         clientId: process.env.GITHUB_CLIENT_ID!,
         clientSecret: process.env.GITHUB_CLIENT_SECRET!,
         callbackUrl: process.env.GITHUB_CALLBACK_URL!,
-        fetchAgent: githubFetchAgent,
     },
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
 };
-
-console.log('✓ GitHub OAuth HTTPS agent configured for self-signed cert support');

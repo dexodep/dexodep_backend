@@ -29,7 +29,6 @@ router.get('/github/callback', async (req: Request, res: Response) => {
         // Exchange code for access token
         const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
             method: 'POST',
-            agent: config.github.fetchAgent,
             headers: {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
@@ -40,7 +39,7 @@ router.get('/github/callback', async (req: Request, res: Response) => {
                 code,
                 redirect_uri: config.github.callbackUrl,
             }),
-        } as any);
+        });
 
         const tokenData = await tokenResponse.json() as { access_token?: string; error?: string };
 
@@ -58,12 +57,11 @@ router.get('/github/callback', async (req: Request, res: Response) => {
 
         // Fetch user info from GitHub
         const userResponse = await fetch('https://api.github.com/user', {
-            agent: config.github.fetchAgent,
             headers: {
                 Authorization: `Bearer ${accessToken}`,
                 Accept: 'application/json',
             },
-        } as any);
+        });
 
         if (!userResponse.ok) {
             console.error('GitHub user fetch error:', {

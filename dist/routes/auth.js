@@ -29,7 +29,6 @@ router.get('/github/callback', async (req, res) => {
         // Exchange code for access token
         const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
             method: 'POST',
-            agent: config_1.config.github.fetchAgent,
             headers: {
                 'Content-Type': 'application/json',
                 Accept: 'application/json',
@@ -54,7 +53,6 @@ router.get('/github/callback', async (req, res) => {
         const accessToken = tokenData.access_token;
         // Fetch user info from GitHub
         const userResponse = await fetch('https://api.github.com/user', {
-            agent: config_1.config.github.fetchAgent,
             headers: {
                 Authorization: `Bearer ${accessToken}`,
                 Accept: 'application/json',
