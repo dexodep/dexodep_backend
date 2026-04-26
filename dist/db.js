@@ -4,9 +4,9 @@ const pg_1 = require("pg");
 const config_1 = require("./config");
 const pool = new pg_1.Pool({
     connectionString: config_1.config.databaseUrl,
-    ssl: config_1.config.databaseUrl.includes('sslmode=require')
-        ? { rejectUnauthorized: false }
-        : undefined,
+    ssl: process.env.NODE_ENV === 'production'
+        ? { rejectUnauthorized: true }
+        : false,
 });
 pool.on('error', (err) => {
     console.error('Unexpected database pool error:', err);

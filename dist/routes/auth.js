@@ -37,11 +37,17 @@ router.get('/github/callback', async (req, res) => {
                 client_id: config_1.config.github.clientId,
                 client_secret: config_1.config.github.clientSecret,
                 code,
+                redirect_uri: config_1.config.github.callbackUrl,
             }),
         });
         const tokenData = await tokenResponse.json();
         if (tokenData.error || !tokenData.access_token) {
-            res.status(400).json({ error: 'Failed to get access token from GitHub' });
+            console.error('GitHub token exchange error:', {
+                status: tokenResponse.status,
+                error: tokenData.error,
+                response: tokenData,
+            });
+            res.status(400).json({ error: 'Failed to get access token from GitHub', details: tokenData.error });
             return;
         }
         const accessToken = tokenData.access_token;
@@ -52,7 +58,20 @@ router.get('/github/callback', async (req, res) => {
                 Accept: 'application/json',
             },
         });
+        if (!userResponse.ok) {
+            console.error('GitHub user fetch error:', {
+                status: userResponse.status,
+                statusText: userResponse.statusText,
+            });
+            res.status(400).json({ error: 'Failed to fetch user from GitHub', details: `Status ${userResponse.status}` });
+            return;
+        }
         const userData = await userResponse.json();
+        if (!userData.id || !userData.login) {
+            console.error('Invalid GitHub user data:', userData);
+            res.status(400).json({ error: 'Invalid user data from GitHub' });
+            return;
+        }
         // Upsert user in DB
         const result = await db_1.default.query(`INSERT INTO users (github_id, github_username, avatar_url, access_token)
        VALUES ($1, $2, $3, $4)
@@ -66,8 +85,14 @@ router.get('/github/callback', async (req, res) => {
         res.redirect(`${config_1.config.frontendUrl}/auth/callback?token=${token}`);
     }
     catch (error) {
-        console.error('GitHub OAuth callback error:', error);
-        res.status(500).json({ error: 'Authentication failed' });
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        const errorStack = error instanceof Error ? error.stack : '';
+        console.error('GitHub OAuth callback error:', {
+            message: errorMsg,
+            stack: errorStack,
+            type: error instanceof Error ? error.constructor.name : typeof error,
+        });
+        res.status(500).json({ error: 'Authentication failed', details: errorMsg });
     }
 });
 // GET /api/auth/me → return current user
