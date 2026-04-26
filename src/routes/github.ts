@@ -29,7 +29,7 @@ router.get('/repos', authMiddleware, async (req: AuthRequest, res: Response) => 
                     Authorization: `Bearer ${accessToken}`,
                     Accept: 'application/vnd.github.v3+json',
                 },
-            }
+            } as any
         );
 
         if (!response.ok) {

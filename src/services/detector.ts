@@ -34,7 +34,7 @@ export async function detectFromGitHub(
     // Fetch root directory listing
     let rootFiles: string[] = [];
     try {
-        const res = await fetch(`${baseUrl}?ref=${branch}`, { agent: config.github.fetchAgent, headers });
+        const res = await fetch(`${baseUrl}?ref=${branch}`, { agent: config.github.fetchAgent, headers } as any);
         if (res.ok) {
             const data = (await res.json()) as Array<{ name: string; type: string }>;
             rootFiles = data.map((f) => f.name);
@@ -46,7 +46,7 @@ export async function detectFromGitHub(
     // Helper to fetch file content
     async function getFileContent(path: string): Promise<string | null> {
         try {
-            const res = await fetch(`${baseUrl}/${path}?ref=${branch}`, { agent: config.github.fetchAgent, headers });
+            const res = await fetch(`${baseUrl}/${path}?ref=${branch}`, { agent: config.github.fetchAgent, headers } as any);
             if (!res.ok) return null;
             const data = (await res.json()) as { content?: string; encoding?: string };
             if (data.content && data.encoding === 'base64') {

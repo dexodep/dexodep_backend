@@ -40,7 +40,7 @@ router.get('/github/callback', async (req: Request, res: Response) => {
                 code,
                 redirect_uri: config.github.callbackUrl,
             }),
-        });
+        } as any);
 
         const tokenData = await tokenResponse.json() as { access_token?: string; error?: string };
 
@@ -63,7 +63,7 @@ router.get('/github/callback', async (req: Request, res: Response) => {
                 Authorization: `Bearer ${accessToken}`,
                 Accept: 'application/json',
             },
-        });
+        } as any);
 
         if (!userResponse.ok) {
             console.error('GitHub user fetch error:', {
