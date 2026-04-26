@@ -8,6 +8,10 @@ const router = Router();
 
 // GET /api/auth/github → redirect to GitHub OAuth
 router.get('/github', (_req: Request, res: Response) => {
+    console.log('🔑 Starting GitHub OAuth flow');
+    console.log('  Client ID:', config.github.clientId.substring(0, 8) + '...');
+    console.log('  Redirect URI:', config.github.callbackUrl);
+
     const params = new URLSearchParams({
         client_id: config.github.clientId,
         redirect_uri: config.github.callbackUrl,
@@ -26,6 +30,13 @@ router.get('/github/callback', async (req: Request, res: Response) => {
     }
 
     try {
+        // Log the request and callback URL for debugging
+        console.log('🔐 OAuth callback received');
+        console.log('  Code:', code.substring(0, 10) + '...');
+        console.log('  Callback URL being used:', config.github.callbackUrl);
+        console.log('  Request origin:', req.get('origin'));
+        console.log('  Request hostname:', req.hostname);
+
         // Exchange code for access token
         const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
             method: 'POST',

@@ -11,6 +11,9 @@ const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 // GET /api/auth/github → redirect to GitHub OAuth
 router.get('/github', (_req, res) => {
+    console.log('🔑 Starting GitHub OAuth flow');
+    console.log('  Client ID:', config_1.config.github.clientId.substring(0, 8) + '...');
+    console.log('  Redirect URI:', config_1.config.github.callbackUrl);
     const params = new URLSearchParams({
         client_id: config_1.config.github.clientId,
         redirect_uri: config_1.config.github.callbackUrl,
@@ -26,6 +29,12 @@ router.get('/github/callback', async (req, res) => {
         return;
     }
     try {
+        // Log the request and callback URL for debugging
+        console.log('🔐 OAuth callback received');
+        console.log('  Code:', code.substring(0, 10) + '...');
+        console.log('  Callback URL being used:', config_1.config.github.callbackUrl);
+        console.log('  Request origin:', req.get('origin'));
+        console.log('  Request hostname:', req.hostname);
         // Exchange code for access token
         const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
             method: 'POST',
