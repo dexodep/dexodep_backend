@@ -3,14 +3,19 @@ import jwt from 'jsonwebtoken';
 import { config } from '../config';
 import db from '../db';
 import { AuthRequest, authMiddleware } from '../middleware/auth';
+import https from 'https';
+import axios from 'axios';
 
 const router = Router();
+
+// SSL fix for Render deployment
+const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
 // GET /api/auth/github → redirect to GitHub OAuth
 router.get('/github', (_req: Request, res: Response) => {
     console.log('🔑 Starting GitHub OAuth flow');
-    console.log('  Client ID:', config.github.clientId.substring(0, 8) + '...');
-    console.log('  Redirect URI:', config.github.callbackUrl);
+    console.log(' Client ID:', config.github.clientId.substring(0, 8) + '...');
+    console.log(' Redirect URI:', config.github.callbackUrl);
 
     const params = new URLSearchParams({
         client_id: config.github.clientId,
@@ -30,33 +35,32 @@ router.get('/github/callback', async (req: Request, res: Response) => {
     }
 
     try {
-        // Log the request and callback URL for debugging
         console.log('🔐 OAuth callback received');
-        console.log('  Code:', code.substring(0, 10) + '...');
-        console.log('  Callback URL being used:', config.github.callbackUrl);
-        console.log('  Request origin:', req.get('origin'));
-        console.log('  Request hostname:', req.hostname);
+        console.log(' Code:', code.substring(0, 10) + '...');
+        console.log(' Callback URL being used:', config.github.callbackUrl);
+        console.log(' Request origin:', req.get('origin'));
+        console.log(' Request hostname:', req.hostname);
 
         // Exchange code for access token
-        const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-            },
-            body: JSON.stringify({
+        const tokenRes = await axios.post(
+            'https://github.com/login/oauth/access_token',
+            {
                 client_id: config.github.clientId,
                 client_secret: config.github.clientSecret,
                 code,
                 redirect_uri: config.github.callbackUrl,
-            }),
-        });
+            },
+            {
+                headers: { Accept: 'application/json' },
+                httpsAgent,
+            }
+        );
 
-        const tokenData = await tokenResponse.json() as { access_token?: string; error?: string };
+        const tokenData = tokenRes.data as { access_token?: string; error?: string };
 
         if (tokenData.error || !tokenData.access_token) {
             console.error('GitHub token exchange error:', {
-                status: tokenResponse.status,
+                status: tokenRes.status,
                 error: tokenData.error,
                 response: tokenData,
             });
@@ -67,23 +71,15 @@ router.get('/github/callback', async (req: Request, res: Response) => {
         const accessToken = tokenData.access_token;
 
         // Fetch user info from GitHub
-        const userResponse = await fetch('https://api.github.com/user', {
+        const userRes = await axios.get('https://api.github.com/user', {
             headers: {
                 Authorization: `Bearer ${accessToken}`,
                 Accept: 'application/json',
             },
+            httpsAgent,
         });
 
-        if (!userResponse.ok) {
-            console.error('GitHub user fetch error:', {
-                status: userResponse.status,
-                statusText: userResponse.statusText,
-            });
-            res.status(400).json({ error: 'Failed to fetch user from GitHub', details: `Status ${userResponse.status}` });
-            return;
-        }
-
-        const userData = await userResponse.json() as {
+        const userData = userRes.data as {
             id: number;
             login: string;
             avatar_url: string;
@@ -98,10 +94,10 @@ router.get('/github/callback', async (req: Request, res: Response) => {
         // Upsert user in DB
         const result = await db.query(
             `INSERT INTO users (github_id, github_username, avatar_url, access_token)
-       VALUES ($1, $2, $3, $4)
-       ON CONFLICT (github_id)
-       DO UPDATE SET github_username = $2, avatar_url = $3, access_token = $4
-       RETURNING id`,
+VALUES ($1, $2, $3, $4)
+ON CONFLICT (github_id)
+DO UPDATE SET github_username = $2, avatar_url = $3, access_token = $4
+RETURNING id`,
             [userData.id, userData.login, userData.avatar_url, accessToken]
         );
 
