@@ -4,7 +4,7 @@ import { config } from './config';
 const pool = new Pool({
     connectionString: config.databaseUrl,
     ssl: process.env.NODE_ENV === 'production'
-        ? { rejectUnauthorized: true }
+        ? { rejectUnauthorized: false }
         : false,
 });
 
