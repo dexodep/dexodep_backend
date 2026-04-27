@@ -5,7 +5,7 @@ const config_1 = require("./config");
 const pool = new pg_1.Pool({
     connectionString: config_1.config.databaseUrl,
     ssl: process.env.NODE_ENV === 'production'
-        ? { rejectUnauthorized: true }
+        ? { rejectUnauthorized: false }
         : false,
 });
 pool.on('error', (err) => {

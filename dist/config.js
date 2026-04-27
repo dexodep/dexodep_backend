@@ -6,10 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.config = void 0;
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-// Disable TLS certificate verification for GitHub API calls in environments 
-// with self-signed certs (e.g., corporate proxies, Render's networking)
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-console.log('⚠️  TLS verification disabled for outbound HTTPS calls (GitHub API access)');
 // Validate required environment variables
 const requiredEnvVars = [
     'DATABASE_URL',
